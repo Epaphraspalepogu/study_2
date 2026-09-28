@@ -27,7 +27,7 @@ Flam Study AI is an AI-powered study assistant that turns free-form notes or top
 - React (functional components + hooks)
 - Vite
 - JavaScript
-- Node.js + Express
+- Node.js serverless API routes on Vercel (Express wrapper for local development)
 - Gemini API (`gemini-3.5-flash-lite`)
 - CSS (no UI framework)
 
@@ -36,7 +36,7 @@ Flam Study AI is an AI-powered study assistant that turns free-form notes or top
 ```
 React frontend
     ↓  POST /api/generate
-Backend API (Express)
+Vercel serverless API (local Express wrapper during development)
     ↓  Gemini API call
 Gemini
     ↓  Structured JSON
@@ -45,7 +45,7 @@ Frontend validation
 Interactive UI (flashcards + quiz)
 ```
 
-The browser only ever calls `/api/generate` and `/api/health`. The Gemini API key lives exclusively in the server's environment variables and is never exposed to the client.
+The browser calls relative `/api/generate` and `/api/health` URLs. Vercel serves the root `api/` functions alongside the Vite frontend. The Gemini API key is read only by the server-side handler and is never exposed to the client.
 
 ## Setup
 
@@ -71,7 +71,7 @@ Keep the real key only in `.env`. This file is ignored by Git. Never put the key
 npm run dev
 ```
 
-This starts both the backend server (port 3001) and the Vite dev server (port 5173) concurrently. Open `http://localhost:5173`.
+This starts the local Express wrapper (port 3001) and Vite dev server (port 5173) concurrently. Open `http://localhost:5173`.
 
 ### Alternative scripts
 
@@ -81,7 +81,7 @@ This starts both the backend server (port 3001) and the Vite dev server (port 51
 - `npm run preview` — preview the production build
 - `npm test` — run the regression tests
 
-The Vite dev server proxies `/api/*` requests to Express on port 3001. Gemini requests have a 30-second timeout and return HTTP 504 if they take too long.
+The Vite dev server proxies `/api/*` requests to Express on port 3001. Production requests are handled directly by Vercel functions and do not use the development proxy. Gemini requests have a 30-second timeout and return HTTP 504 if they take too long.
 
 ### Start services separately
 
@@ -151,11 +151,11 @@ AI tools were used during development for brainstorming, debugging assistance, c
 - No authentication
 - No persistent database — study sets are not saved between sessions
 
-## Production Deployment Requirements
+## Production Deployment
 
-This repository is configured for local development only. The Vite `/api` proxy is development-only, and the Express backend is a persistent `app.listen()` process rather than a Vercel serverless function.
+Deploy the repository root to Vercel. Vercel builds the Vite frontend with `npm run build` and discovers `api/health.js` and `api/generate.js` as serverless functions. The minimal `vercel.json` sets the function duration above the backend's 30-second Gemini timeout; no rewrites or separate backend host are needed.
 
-For production, host the static Vite frontend and Express API separately, configure the frontend API URL and the API host's CORS allowlist, and set `GEMINI_API_KEY` in the API host's environment settings. Alternatively, convert the Express routes into Vercel serverless functions. No production API URL, Vercel functions, or deployment configuration is included. Never expose the Gemini key through a `VITE_` variable.
+In the Vercel project settings, add `GEMINI_API_KEY` for the Preview and Production environments. Keep `.env` local and ignored by Git; never use a `VITE_`-prefixed key or commit a real key. Local development continues to use the Vite proxy and Express wrapper.
 
 ## Time Spent
 
