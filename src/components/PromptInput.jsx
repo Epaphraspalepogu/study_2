@@ -1,22 +1,15 @@
 import { useState } from 'react';
 
-const EXAMPLES = [
-  'DBMS normalization',
-  'Operating system processes',
-  'Machine learning basics',
-];
-
 const MAX_CHARS = 5000;
 
-export default function PromptInput({ onSubmit, disabled }) {
-  const [value, setValue] = useState('');
+export default function PromptInput({ value, onChange, onSubmit, disabled }) {
   const [localError, setLocalError] = useState('');
 
   function handleSubmit(e) {
     e.preventDefault();
     const trimmed = value.trim();
     if (!trimmed) {
-      setLocalError('Please enter some study material.');
+      setLocalError('Enter notes or a topic to continue.');
       return;
     }
     setLocalError('');
@@ -24,34 +17,25 @@ export default function PromptInput({ onSubmit, disabled }) {
   }
 
   function handleClear() {
-    setValue('');
-    setLocalError('');
-  }
-
-  function handleExample(text) {
-    setValue(text);
+    onChange('');
     setLocalError('');
   }
 
   return (
     <section className="prompt-section">
       <div className="prompt-card">
-        <h2 className="prompt-title">Ready to study?</h2>
-        <p className="prompt-subtitle">
-          Paste your notes or enter a topic and let AI create an interactive study set.
-        </p>
-
+        <h1 className="prompt-title">What do you want to study?</h1>
         <form onSubmit={handleSubmit} className="prompt-form">
           <label htmlFor="study-input" className="sr-only">
-            Study material input
+            Notes or Topic
           </label>
           <textarea
             id="study-input"
             className="prompt-textarea"
-            placeholder="Paste your notes or enter a topic you want to study…"
+            placeholder="Paste your notes or enter a topic..."
             value={value}
             onChange={(e) => {
-              setValue(e.target.value);
+              onChange(e.target.value);
               if (localError) setLocalError('');
             }}
             maxLength={MAX_CHARS}
@@ -75,26 +59,10 @@ export default function PromptInput({ onSubmit, disabled }) {
           )}
 
           <button type="submit" className="btn btn-primary btn-lg" disabled={disabled}>
-            {disabled ? 'Generating…' : 'Generate Study Set'}
+            {disabled ? 'Generating...' : 'Generate Study Material'}
           </button>
         </form>
 
-        <div className="examples">
-          <p className="examples-label">Try an example:</p>
-          <div className="examples-list">
-            {EXAMPLES.map((ex) => (
-              <button
-                key={ex}
-                type="button"
-                className="example-chip"
-                onClick={() => handleExample(ex)}
-                disabled={disabled}
-              >
-                {ex}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );

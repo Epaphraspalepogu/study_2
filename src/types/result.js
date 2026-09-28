@@ -1,5 +1,3 @@
-// JSDoc type definitions for the AI study set result.
-
 /**
  * @typedef {Object} Flashcard
  * @property {string} id

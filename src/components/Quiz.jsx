@@ -7,20 +7,14 @@ export default function Quiz({ quiz }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [answers, setAnswers] = useState([]);
   const [completed, setCompleted] = useState(false);
-  const [retryWrong, setRetryWrong] = useState(false);
+  const [retryDeck, setRetryDeck] = useState(null);
 
   const wrongAnswers = useMemo(
     () => answers.filter((a) => a.selected !== a.correct),
     [answers]
   );
 
-  const deck = useMemo(() => {
-    if (retryWrong) {
-      const wrongIds = new Set(wrongAnswers.map((a) => a.id));
-      return quiz.filter((q) => wrongIds.has(q.id));
-    }
-    return quiz;
-  }, [quiz, retryWrong, wrongAnswers]);
+  const deck = useMemo(() => retryDeck ?? quiz, [quiz, retryDeck]);
 
   const question = deck[currentQuestion];
 
@@ -47,11 +41,12 @@ export default function Quiz({ quiz }) {
     setSelectedAnswer(null);
     setAnswers([]);
     setCompleted(false);
-    setRetryWrong(false);
+    setRetryDeck(null);
   }
 
   function retryWrongOnly() {
-    setRetryWrong(true);
+    const wrongIds = new Set(wrongAnswers.map((answer) => answer.id));
+    setRetryDeck(quiz.filter((question) => wrongIds.has(question.id)));
     setCurrentQuestion(0);
     setSelectedAnswer(null);
     setAnswers([]);

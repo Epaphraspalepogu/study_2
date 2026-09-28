@@ -2,13 +2,10 @@ export default function Header({ onReset }) {
   return (
     <header className="app-header">
       <div className="header-inner">
-        <button className="logo" onClick={onReset} aria-label="Flam Study AI home">
+        <button className="logo" onClick={onReset} aria-label="Flam Study Assistant home">
           <span className="logo-mark">FLAM</span>
-          <span className="logo-text">Study AI</span>
+          <span className="logo-text">Study Assistant</span>
         </button>
-        <div className="header-right">
-          <span className="header-badge">AI Study Assistant</span>
-        </div>
       </div>
     </header>
   );

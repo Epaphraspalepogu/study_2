@@ -28,7 +28,7 @@ Flam Study AI is an AI-powered study assistant that turns free-form notes or top
 - Vite
 - JavaScript
 - Node.js + Express
-- Gemini API (gemini-1.5-flash)
+- Gemini API (`gemini-3.5-flash-lite`)
 - CSS (no UI framework)
 
 ## Architecture
@@ -57,13 +57,13 @@ npm install
 
 ### 2. Configure environment
 
-Create a `.env` file in the project root (see `.env.example`):
+Create a `.env` file in the project root using the placeholder from `.env.example`, then replace it with a key from [Google AI Studio](https://aistudio.google.com/apikey):
 
 ```
-GEMINI_API_KEY=your_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-Get a key from [Google AI Studio](https://aistudio.google.com/apikey).
+Keep the real key only in `.env`. This file is ignored by Git. Never put the key in frontend variables or commit it.
 
 ### 3. Run the app
 
@@ -79,8 +79,27 @@ This starts both the backend server (port 3001) and the Vite dev server (port 51
 - `npm run server` — start only the Express backend
 - `npm run build` — production build of the frontend
 - `npm run preview` — preview the production build
+- `npm test` — run the regression tests
 
-The Vite dev server proxies `/api/*` requests to the Express server, so there are no CORS issues during development.
+The Vite dev server proxies `/api/*` requests to Express on port 3001. Gemini requests have a 30-second timeout and return HTTP 504 if they take too long.
+
+### Start services separately
+
+Run these in separate terminals from the project root:
+
+```bash
+npm run server
+npm run client
+```
+
+### Use the application
+
+1. Paste notes or enter a topic in the study input, or choose an example.
+2. Select **Generate Study Set** and wait for the generated overview.
+3. Open **Flashcards** to reveal answers and mark cards known or needing review.
+4. Open **Quiz**, answer each question, review the score, and retry incorrect answers.
+
+Run the regression suite with `npm test`.
 
 ## API
 
@@ -128,8 +147,15 @@ AI tools were used during development for brainstorming, debugging assistance, c
 
 - AI output quality depends on model response
 - API availability depends on Gemini
+- Gemini rate limits or capacity issues can prevent generation; provider failures are reported as a generic generation error
 - No authentication
 - No persistent database — study sets are not saved between sessions
+
+## Production Deployment Requirements
+
+This repository is configured for local development only. The Vite `/api` proxy is development-only, and the Express backend is a persistent `app.listen()` process rather than a Vercel serverless function.
+
+For production, host the static Vite frontend and Express API separately, configure the frontend API URL and the API host's CORS allowlist, and set `GEMINI_API_KEY` in the API host's environment settings. Alternatively, convert the Express routes into Vercel serverless functions. No production API URL, Vercel functions, or deployment configuration is included. Never expose the Gemini key through a `VITE_` variable.
 
 ## Time Spent
 

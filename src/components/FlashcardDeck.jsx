@@ -59,7 +59,6 @@ export default function FlashcardDeck({ flashcards }) {
     setCompleted(false);
   }
 
-  // Map deck index back to original flashcards index
   const originalIdx = reviewWrong
     ? flashcards.findIndex((fc) => fc.id === card?.id)
     : index;
@@ -102,6 +101,7 @@ export default function FlashcardDeck({ flashcards }) {
 
   return (
     <Flashcard
+      key={card.id}
       card={card}
       index={index}
       total={deck.length}

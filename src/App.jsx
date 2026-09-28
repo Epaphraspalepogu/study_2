@@ -9,10 +9,10 @@ import { generateStudySet } from './lib/api';
 import { validateResult } from './lib/validateResult';
 
 export default function App() {
-  const [status, setStatus] = useState('idle'); // idle | loading | error | success
+  const [status, setStatus] = useState('idle');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-  const [prefill, setPrefill] = useState('');
+  const [input, setInput] = useState('');
 
   const requestIdRef = useRef(0);
   const abortRef = useRef(null);
@@ -28,7 +28,7 @@ export default function App() {
 
     try {
       const data = await generateStudySet(input, controller.signal);
-      if (myId !== requestIdRef.current) return; // stale
+      if (myId !== requestIdRef.current) return;
 
       const { valid, error: validationError } = validateResult(data);
       if (!valid) {
@@ -41,12 +41,12 @@ export default function App() {
       setStatus('success');
     } catch (err) {
       if (err && err.name === 'AbortError') return;
-      if (myId !== requestIdRef.current) return; // stale
+      if (myId !== requestIdRef.current) return;
       setStatus('error');
       if (err?.type === 'network') {
         setError('Unable to connect to the server.');
       } else if (err?.type === 'server') {
-        setError('The AI service is currently unavailable.');
+        setError(err?.message || 'The AI service is currently unavailable.');
       } else {
         setError(err?.message || 'Unable to generate study content');
       }
@@ -59,11 +59,11 @@ export default function App() {
     setStatus('idle');
     setResult(null);
     setError('');
-    setPrefill('');
+    setInput('');
   }, []);
 
   const handlePickExample = useCallback((text) => {
-    setPrefill(text);
+    setInput(text);
   }, []);
 
   return (
@@ -75,13 +75,17 @@ export default function App() {
           {status === 'idle' && (
             <>
               <div className="hero">
-                <h1 className="hero-title">Turn your notes into interactive learning.</h1>
                 <p className="hero-subtitle">
-                  Flam Study AI transforms any topic or set of notes into flashcards and a quiz you can actually use.
+                  Turn your notes into interactive flashcards and quizzes.
                 </p>
               </div>
-              <PromptInput onSubmit={handleGenerate} disabled={false} />
-              {!prefill && <EmptyState onPick={handlePickExample} />}
+              <PromptInput
+                value={input}
+                onChange={setInput}
+                onSubmit={handleGenerate}
+                disabled={false}
+              />
+              {!input.trim() && <EmptyState onPick={handlePickExample} />}
             </>
           )}
 
@@ -90,10 +94,7 @@ export default function App() {
           {status === 'error' && (
             <ErrorState
               message={error}
-              onRetry={() => {
-                setStatus('idle');
-                setError('');
-              }}
+              onRetry={() => handleGenerate(input)}
               retryLabel="Try Again"
             />
           )}
@@ -104,9 +105,6 @@ export default function App() {
         </div>
       </main>
 
-      <footer className="app-footer">
-        <p>Flam Study AI — Turn your notes into interactive learning.</p>
-      </footer>
     </div>
   );
 }
